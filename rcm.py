@@ -1,6 +1,6 @@
 import numpy as np
 
-def Bz(a1,a2,b1,b2,c1,c2,t,x,y,z,J, Mu) -> np.float64:
+def Bz(a1: float, a2: float, b1: float, b2: float, c1: float, c2: float, t: float, x: float, y: float, z:float, J, Mu) -> np.float64:
   output = (J*Mu*(a2*b1 - b1*x + a1*(-b2 + y)))/(4.*np.pi*(a2**2*np.sqrt(a1**2 \
   + b1**2 + c1**2) + b2**2*np.sqrt(a1**2 + b1**2 + c1**2) + \
   np.sqrt(a1**2 + b1**2 + c1**2)*c2**2 + 2*a1*a2*np.sqrt(a1**2 + b1**2 \
@@ -118,7 +118,7 @@ def By(a1,a2,b1,b2,c1,c2,t,x,y,z,J, Mu) -> np.float64:
   return output
 
 
-def B(a1,a2,b1,b2,c1,c2,t,x,y,z,J, Mu) -> np.float64:
+def B(a1,a2,b1,b2,c1,c2,t,x,y,z,J, Mu) -> tuple(np.ndarray):
   x1 = Bx(a1,a2,b1,b2,c1,c2,t,x,y,z,J, Mu) 
   x2 = By(a1,a2,b1,b2,c1,c2,t,x,y,z,J, Mu) 
   x3 = Bz(a1,a2,b1,b2,c1,c2,t,x,y,z,J, Mu) 
