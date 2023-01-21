@@ -44,7 +44,12 @@ def Bz(a1: float, a2: float,
     b1*(b2 - y) + c1*(c2 - z)) - 2*c2*z + z**2)))
   )
 
-def Bx(a1,a2,b1,b2,c1,c2,t,x,y,z,J, Mu) -> np.float64:
+def Bx(a1: float, a2: float, 
+       b1: float, b2: float, 
+       c1: float, c2: float, 
+       t: float, 
+       x: float, y: float, z:float, 
+       J, Mu) -> np.float64:
   return (
     (J*Mu*(b2*c1 - c1*y + b1*(-c2 + z)))/(4.*np.pi*(a2**2*np.sqrt(a1**2 \
     + b1**2 + c1**2) + b2**2*np.sqrt(a1**2 + b1**2 + c1**2) + \
@@ -83,7 +88,12 @@ def Bx(a1,a2,b1,b2,c1,c2,t,x,y,z,J, Mu) -> np.float64:
     b1*(b2 - y) + c1*(c2 - z)) - 2*c2*z + z**2)))
   )
 
-def By(a1,a2,b1,b2,c1,c2,t,x,y,z,J, Mu) -> np.float64:
+def By(a1: float, a2: float, 
+       b1: float, b2: float, 
+       c1: float, c2: float, 
+       t: float, 
+       x: float, y: float, z:float, 
+       J, Mu) -> np.float64:
   return (-0.25*(J*Mu*(a2*c1 - c1*x + a1*(-c2 + \
     z)))/(np.pi*(a2**2*np.sqrt(a1**2 + b1**2 + c1**2) + \
     b2**2*np.sqrt(a1**2 + b1**2 + c1**2) + np.sqrt(a1**2 + b1**2 + \
