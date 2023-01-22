@@ -1,6 +1,6 @@
 import numpy as np
 
-def Bz(a1: float, a2: float, 
+def _Bz(a1: float, a2: float, 
        b1: float, b2: float, 
        c1: float, c2: float, 
        t: float, 
@@ -44,7 +44,7 @@ def Bz(a1: float, a2: float,
     b1*(b2 - y) + c1*(c2 - z)) - 2*c2*z + z**2)))
   )
 
-def Bx(a1: float, a2: float, 
+def _Bx(a1: float, a2: float, 
        b1: float, b2: float, 
        c1: float, c2: float, 
        t: float, 
@@ -88,7 +88,7 @@ def Bx(a1: float, a2: float,
     b1*(b2 - y) + c1*(c2 - z)) - 2*c2*z + z**2)))
   )
 
-def By(a1: float, a2: float, 
+def _By(a1: float, a2: float, 
        b1: float, b2: float, 
        c1: float, c2: float, 
        t: float, 
@@ -132,25 +132,19 @@ def By(a1: float, a2: float,
     b1*(b2 - y) + c1*(c2 - z)) - 2*c2*z + z**2)))
   )
 
-def B(a1,a2,b1,b2,c1,c2,t,x,y,z,J, Mu) -> tuple[np.ndarray]:
-  x1 = Bx(a1,a2,b1,b2,c1,c2,t,x,y,z,J, Mu) 
-  x2 = By(a1,a2,b1,b2,c1,c2,t,x,y,z,J, Mu) 
-  x3 = Bz(a1,a2,b1,b2,c1,c2,t,x,y,z,J, Mu) 
-  return x1,x2,x3
-
-def B_total(a1,a2,b1,b2,c1,c2,x,y,z,J, Mu) -> tuple[np.ndarray]:
+def B(a1,a2,b1,b2,c1,c2,x,y,z,J, Mu) -> tuple[np.ndarray]:
   return (
     (
-      Bx(a1,a2,b1,b2,c1,c2,1,x,y,z,J, Mu) - 
-      Bx(a1,a2,b1,b2,c1,c2,0,x,y,z,J, Mu)
+      _Bx(a1,a2,b1,b2,c1,c2,1,x,y,z,J, Mu) - 
+      _Bx(a1,a2,b1,b2,c1,c2,0,x,y,z,J, Mu)
     ),
     (
-      By(a1,a2,b1,b2,c1,c2,1,x,y,z,J, Mu) - 
-      By(a1,a2,b1,b2,c1,c2,0,x,y,z,J, Mu)
+      _By(a1,a2,b1,b2,c1,c2,1,x,y,z,J, Mu) - 
+      _By(a1,a2,b1,b2,c1,c2,0,x,y,z,J, Mu)
     ),
     (
-      Bz(a1,a2,b1,b2,c1,c2,1,x,y,z,J, Mu) - 
-      Bz(a1,a2,b1,b2,c1,c2,0,x,y,z,J, Mu)
+      _Bz(a1,a2,b1,b2,c1,c2,1,x,y,z,J, Mu) - 
+      _Bz(a1,a2,b1,b2,c1,c2,0,x,y,z,J, Mu)
     )
   )
 
