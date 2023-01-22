@@ -94,7 +94,8 @@ def _By(a1: float, a2: float,
        t: float, 
        x: float, y: float, z:float, 
        J, Mu) -> np.float64:
-  return (-0.25*(J*Mu*(a2*c1 - c1*x + a1*(-c2 + \
+  return (
+    -0.25*(J*Mu*(a2*c1 - c1*x + a1*(-c2 + \
     z)))/(np.pi*(a2**2*np.sqrt(a1**2 + b1**2 + c1**2) + \
     b2**2*np.sqrt(a1**2 + b1**2 + c1**2) + np.sqrt(a1**2 + b1**2 + \
     c1**2)*c2**2 + 2*a1*a2*np.sqrt(a1**2 + b1**2 + c1**2)*t + \
