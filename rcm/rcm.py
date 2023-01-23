@@ -50,7 +50,7 @@ class RCM:
         def count_iterable(i: Iterable) -> int:
             return sum(1 for e in i)
         mol = Chem.rdmolfiles.MolFromXYZFile(filepath)
-
+        self.mol = mol
         # df_xyz = pd.DataFrame(
         #   np.nan, 
         #   columns=['atom', 'x', 'y', 'z'], 
@@ -96,29 +96,29 @@ class RCM:
         return df_all_B.sum(axis=0)
 
 
-    def check_if_current_flow_conserved(df: pd.DataFrame) -> bool:
+    def check_if_current_flow_conserved(self) -> bool:
 
         # first basic check if the dataframe has 3 columns.
-        assert df.shape[1] == 3, (
-            f"The connectivity dataframe has {df.shape[1]}"
+        assert self.conn.shape[1] == 3, (
+            f"The connectivity dataframe has {self.conn.shape[1]}"
             f" columns, exactly 3 are required."
         )
 
         # check if all columns are named as they should
         for i in ['start','end','current_weight']:
-            assert i in df.columns, (
+            assert i in self.conn.columns, (
             f"The connectivity dataframe does not contain" 
             f" expected column of name {i}."
             )
 
         # check all numbers in columns two and three
-        combined_list = pd.concat([df.start, df.end], axis=0).unique()
+        combined_list = pd.concat([self.conn.start, self.conn.end], axis=0).unique()
 
         for i in combined_list:
             # check how many goes in and out
             current_in_out_balanced = (
-                sum(df.loc[df.end == i,'current_weight']) - 
-                sum(df.loc[df.start == i,'current_weight'])
+                sum(self.conn.loc[self.conn.end == i,'current_weight']) - 
+                sum(self.conn.loc[self.conn.start == i,'current_weight'])
             ) == 0
             assert current_in_out_balanced, (
                 f'Current flowing in and out '
