@@ -1,0 +1,85 @@
+rcm.B(0,1,2,3,4,0,1,2,4,5)
+
+
+file_path_list_of_spectator_atoms = 'cp6t6_0p_blyp35_geom_atoms.csv'
+
+import csv
+with open(file_path_list_of_spectator_atoms, mode ='r')as file:
+  csvFile = csv.reader(file)
+  for lines in csvFile:
+    print(lines)
+    for i in lines:
+      print(i)
+    break
+
+
+
+
+
+# import numpy as np
+# import tkinter as tk
+# from tkinter import filedialog
+# import pandas as pd
+
+# root = tk.Tk()
+# root.withdraw()
+
+# # file_path = filedialog.askopenfilename(
+# #   title="Select geometry xyz file.",
+# #   initialdir='.',
+# #   filetypes=(
+# #       # ("jpeg files", "*.jpg"),
+# #       # ("csv files", "*.csv"),
+# #       ("xyz files", "*.xyz"),
+# #       ("gif files", "*.gif*")
+# #       # ("png files", "*.png")
+# #     )
+# #   )
+
+
+
+
+
+
+
+
+
+
+
+
+for x,y,z in zip(range(5),range(5),range(5)):
+    print(a.get_B(x,y,z))
+
+
+    
+def get_B_for_xyz(x,y,z):
+  df_all_B = pd.DataFrame(
+    np.nan, 
+    columns=['Bx', 'By', 'Bz'], 
+    index=np.arange(len(conn))
+  )
+  # df_temp
+  for i in conn.index:
+    temp_start = conn.loc[i,'start']
+    temp_end = conn.loc[i,'end']
+    J = conn.loc[i,'current_weight']
+
+    a2 = xyz.loc[(temp_start-1),'x']
+    b2 = xyz.loc[(temp_start-1),'y']
+    c2 = xyz.loc[(temp_start-1),'z']
+
+    a1 = xyz.loc[(temp_end-1),'x'] - a2
+    b1 = xyz.loc[(temp_end-1),'y'] - b2
+    c1 = xyz.loc[(temp_end-1),'z'] - c2
+    df_all_B.loc[i,::] = rcm.B(a1,a2,b1,b2,c1,c2,x,y,z,J)
+
+  return df_all_B.sum(axis=0)
+
+# so best is gonna be one function, taking xyz and conn and xyz where to assess
+# maybe best to keep data in tuple (J,start,stop), (x,y,z) ?
+
+
+# function to apply
+#x,y#z coulns -> tuple x,y,z? 
+
+# problem - subtraction happening through indexes, not rows

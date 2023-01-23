@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def _Bz(a1: float, a2: float, 
         b1: float, b2: float, 
         c1: float, c2: float, 
@@ -133,7 +134,13 @@ def _By(a1: float, a2: float,
         b1*(b2 - y) + c1*(c2 - z)) - 2*c2*z + z**2)))
     )
 
-def B(a1,a2,b1,b2,c1,c2,x,y,z,J) -> tuple[np.ndarray]:
+def B(
+        a1: float, a2: float, 
+        b1: float, b2: float, 
+        c1: float, c2: float, 
+        x: float, y: float, z: float, 
+        J: float
+        ) -> tuple[np.ndarray]:
     return (
         (
         _Bx(a1,a2,b1,b2,c1,c2,1,x,y,z,J) - 
