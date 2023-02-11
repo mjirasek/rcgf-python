@@ -140,7 +140,7 @@ def B(
         c1: float, c2: float, 
         x: float, y: float, z: float, 
         J: float
-        ) -> tuple[np.ndarray]:
+        ) -> tuple[np.float64]:
     return (
         (
         _Bx(a1,a2,b1,b2,c1,c2,1,x,y,z,J) - 
