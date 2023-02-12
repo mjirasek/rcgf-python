@@ -1,21 +1,21 @@
 from sympy import Polygon
 import numpy as np
+from typing import Tuple
 
 
-def area_3d(polygon_xyz: np.array) -> float:
+def area_3d(xyz: np.array) -> Tuple(float):
 
-    Ax = area(polygon_xyz[:,1:3]);
-    Ay = area(polygon_xyz[:,0:3:2]);
-    Az = area(polygon_xyz[:,0:2]);
-
+    Ax = _area(xyz[:,[1,2]]);
+    Ay = _area(xyz[:,[0,2]]);
+    Az = _area(xyz[:,[0,1]]);
     return Ax,Ay,Az
 
 
-
-def area(polygon_2d: np.array) -> float:
-    return float(Polygon(*polygon_2d).area)
-
-
+def _area(polygon_2d: np.array) -> float:
+    try: 
+        return float(Polygon(*polygon_2d).area)
+    except:
+        return 10
 
 
 

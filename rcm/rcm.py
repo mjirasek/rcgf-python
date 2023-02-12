@@ -86,6 +86,45 @@ class RCM:
             )
         )
 
+
+    def get_A(
+            self,
+
+        ) -> tuple[float]:
+
+        no_split_path = self.conn.current_weight == 1
+        if len(no_split_path) < 3:
+            raise AssertionError(
+                'The list of connectivities'
+                ' is shorter than 3. Very'
+                ' strange error.'
+            )
+
+        if sum(no_split_path) < 3:
+            raise AssertionError(
+                'The list of connections that'
+                ' have currenth path weight 1'
+                ' is shorter than 3 bonds. This'
+                ' means that there are not enough'
+                ' segments with current weight "1"'
+                '. Thus, the area'
+                ' cannot be estimated unambigiously.'
+                '\n'
+                'Perhaph the current paths are split'
+                ' into two equal parts and both have'
+                ' weight 0.5?'
+            )
+
+        self.conn.loc[no_split_path,::]
+        pass
+
+
+
+
+
+
+
+
     @classmethod
     def grid_generator_2d(
             cls,
