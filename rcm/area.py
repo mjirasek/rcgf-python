@@ -1,13 +1,13 @@
 from sympy import Polygon
 import numpy as np
-from typing import Tuple
+# from typing import Tuple
 
 
-def area_3d(xyz: np.array) -> Tuple(float):
+def area_3d(xyz: np.array) -> tuple[float]:
 
-    Ax = _area(xyz[:,[1,2]]);
-    Ay = _area(xyz[:,[0,2]]);
-    Az = _area(xyz[:,[0,1]]);
+    Ax = _area(xyz[:,[1,2]])
+    Ay = _area(xyz[:,[0,2]])
+    Az = _area(xyz[:,[0,1]])
     return Ax,Ay,Az
 
 
