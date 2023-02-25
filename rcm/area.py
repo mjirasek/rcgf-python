@@ -1,23 +1,30 @@
 from sympy import Polygon
 import numpy as np
-# from typing import Tuple
+import pandas as pd
 
 
-def area_3d(xyz: np.array) -> tuple[float]:
+def area_3d(xyz: pd.DataFrame) -> tuple[float]:
 
-    Ax = _area(xyz[:,[1,2]])
-    Ay = _area(xyz[:,[0,2]])
-    Az = _area(xyz[:,[0,1]])
-    return Ax,Ay,Az
+    _xyz = np.array(xyz.loc[::,['x','y','z']])
+    _Ax = _area(_xyz[:,[1,2]])
+    _Ay = _area(_xyz[:,[0,2]])
+    _Az = _area(_xyz[:,[0,1]])
+    scale_factor = np.sqrt(_Ax**2 + _Ay**2 + _Az**2)
+
+    Ax = _Ax / scale_factor
+    Ay = _Ay / scale_factor
+    Az = _Az / scale_factor
+
+    return Ax, Ay, Az
 
 
 def _area(polygon_2d: np.array) -> float:
     try: 
         return float(Polygon(*polygon_2d).area)
+        # this is very slow part, clearly the Polygon
+        # is very slow function.
     except:
         return 10
-
-
 
 
 # X = xyz(conn(:,2),1);
