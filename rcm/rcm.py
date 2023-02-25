@@ -3,6 +3,9 @@ import numpy as np
 from rdkit import Chem
 from typing import Iterable
 from . import biot_savart
+from . import area
+from .messages import WarningMessage, LoadingMessage
+
 
 class RCM:
     
@@ -10,11 +13,20 @@ class RCM:
     def __init__(self, 
                 xyz: str, 
                 conn: str) -> None:
-        self.xyz: pd.DateFrame = self._xyz_reader(xyz)
+        self.mol: Chem.rdchem.Mol = self._xyz_to_mol(xyz)
+        self.xyz: pd.DateFrame = self._mol_to_pd_xyz()
         self.conn: pd.DataFrame = self._connectivity_reader(conn)
         self.M = self._combined_matrix()
         self.check_if_current_flow_conserved()
-    
+
+        try: 
+            self.net_area: tuple[float] = self.get_net_area_weight()
+        except:
+            print(WarningMessage.AREA_ESTIMATION_FAIL)
+
+    def _xyz_to_mol(self, filepath: str):
+        # print(LoadingMessage.LOADING_XYZ)
+        return Chem.rdmolfiles.MolFromXYZFile(filepath)
 
     def _combined_matrix(self) -> pd.DataFrame:
         M = pd.DataFrame(
@@ -40,6 +52,7 @@ class RCM:
         return M
 
     def _connectivity_reader(self, filepath: str) -> pd.DataFrame:
+        # print(LoadingMessage.LOADING_CONN)
         return (
             pd.read_csv(
             filepath, header=None, 
@@ -47,26 +60,23 @@ class RCM:
             )
         )
 
-    def _xyz_reader(self, filepath: str) -> pd.DataFrame:
+    def _mol_to_pd_xyz(self) -> pd.DataFrame:
         def count_iterable(i: Iterable) -> int:
             return sum(1 for e in i)
-        mol = Chem.rdmolfiles.MolFromXYZFile(filepath)
-        self.mol = mol
         df_xyz = pd.DataFrame(
             np.nan, 
             columns=['atom', 'x', 'y', 'z'], 
-            index=np.arange(count_iterable(mol.GetAtoms()))
+            index=np.arange(count_iterable(self.mol.GetAtoms()))
         )
 
-        for i,atom in enumerate(mol.GetAtoms()): 
-            positions = mol.GetConformer().GetAtomPosition(i)
+        for i,atom in enumerate(self.mol.GetAtoms()): 
+            positions = self.mol.GetConformer().GetAtomPosition(i)
             df_xyz.at[i,'atom'] = atom.GetSymbol()
             df_xyz.at[i,'x'] = positions.x
             df_xyz.at[i,'y'] = positions.y
             df_xyz.at[i,'z'] = positions.z
 
         return df_xyz
-
 
     def get_B(
             self, 
@@ -86,12 +96,24 @@ class RCM:
             )
         )
 
+##################################
+#################################
+    def get_np_b(self, xyz: np.array) -> np.array:
+        
+        return tuple(map(pd.DataFrame.sum,
+                biot_savart.B(
+                    self.M.a1, self.M.a2, 
+                    self.M.b1, self.M.b2,
+                    self.M.c1, self.M.c2, 
+                    xyz[0], xyz[1], xyz[2], 
+                    self.M.J
+                )
+            )
+        )
 
-    def get_A(
-            self,
 
-        ) -> tuple[float]:
 
+    def _return_index_for_area_estimation(self) -> list[int]:
         no_split_path = self.conn.current_weight == 1
         if len(no_split_path) < 3:
             raise AssertionError(
@@ -115,13 +137,49 @@ class RCM:
                 ' weight 0.5?'
             )
 
-        self.conn.loc[no_split_path,::]
-        pass
+        def _return_row_first_bond_weight_one() -> int:
+            return int(self.conn.loc[self.conn.current_weight == 1, ::].index[0])
 
+        def _return_end_conn_number_for_row() -> int:
+            return int(self.conn.loc[current_pd_index,'end'])
 
+        def _return_current_weight() -> float:
+            return float(self.conn.loc[current_pd_index,'current_weight'])
 
+        # It starts with first segment with weight 1.
+        current_pd_index = _return_row_first_bond_weight_one()
+        current_conn_index = _return_end_conn_number_for_row()
 
+        index_depo = []
+        index_depo.append(current_conn_index)
 
+        MAX_STEPS = 100
+        while len(index_depo) < MAX_STEPS:
+            current_pd_index = int(self.conn.loc[self.conn.start == current_conn_index, ::].index[0])
+            current_conn_index = int(self.conn.loc[current_pd_index,'end'])
+            if current_conn_index in index_depo:
+                break
+            if _return_current_weight() == 1:
+                index_depo.append(current_conn_index)
+        else:
+            raise RuntimeWarning(
+                    f'Iteration throught the connectivity '
+                    f'matrix took too many steps. '
+                    f'Maximum steps to walk through the '
+                    f'connectivity is {MAX_STEPS}. '
+                )
+
+        return index_depo
+    
+    def get_net_area_weight(self) -> tuple[float]:
+
+        # function that returns me list of indexes for which you should calculate the area, in ordered way 
+        index_depo = self._return_index_for_area_estimation()
+        new_index_depo = [x-1 for x in index_depo]
+        self.xyz_for_area = self.xyz.loc[new_index_depo,['x','y','z']]
+        Ax, Ay, Az = area.area_3d(self.xyz_for_area)
+        # self.area = Ax, Ay, Az
+        return Ax, Ay, Az
 
 
 
@@ -132,8 +190,7 @@ class RCM:
             y_range: float = 20,
             resolution: float = 1,
             z: float = 0,
-        ) -> np.array:
-
+        ) -> pd.DataFrame:
         x = np.arange(-x_range/2, x_range/2+resolution, resolution)
         y = np.arange(-y_range/2, y_range/2+resolution, resolution)
         xyz_grid = np.full([x.size*y.size, 3], np.nan)
@@ -142,30 +199,56 @@ class RCM:
             for j in y:
                 xyz_grid[mesh_index,::] = i,j,z
                 mesh_index += 1
-        return xyz_grid
+        xyz_grid_pd = pd.DataFrame(xyz_grid,columns=['x','y','z'])
+        # xyz_grid_pd = pd.DataFrame(xyz_grid,columns=['xyz'])
+        return xyz_grid_pd
 
-    def screen_2d(
-            self, 
-            x_range: float = 20, 
-            y_range: float = 20,
-            resolution: float = 1,
-        ) -> None:
-        """_summary_
 
-        Args:
-            x_range (float): 
-                    width of the grid in Angrtom. Defaults to 20.
-            y_range (float): 
-                    height of the grid in Angrtom. Defaults to 20.
-            resolution (float): 
-                    resolution of the grid in Angstrom. Defaults to 1.
-        """
 
-        grid = self.grid_generator_2d(x_range,y_range,resolution)
-        print(grid)
-        # generate 2d grid
-        # screen 2d plot
-        pass
+    # @classmethod
+    # def grid_generator_2d(
+    #         cls,
+    #         x_range: float = 20, 
+    #         y_range: float = 20,
+    #         resolution: float = 1,
+    #         z: float = 0,
+    #     ) -> np.array:
+
+    #     x = np.arange(-x_range/2, x_range/2+resolution, resolution)
+    #     y = np.arange(-y_range/2, y_range/2+resolution, resolution)
+    #     xyz_grid = np.full([x.size*y.size, 3], np.nan)
+    #     mesh_index = 0
+    #     for i in x:
+    #         for j in y:
+    #             xyz_grid[mesh_index,::] = i,j,z
+    #             mesh_index += 1
+    #     return xyz_grid
+
+
+
+
+    # def screen_2d(
+    #         self, 
+    #         x_range: float = 20, 
+    #         y_range: float = 20,
+    #         resolution: float = 1,
+    #     ) -> None:
+    #     """_summary_
+
+    #     Args:
+    #         x_range (float): 
+    #                 width of the grid in Angrtom. Defaults to 20.
+    #         y_range (float): 
+    #                 height of the grid in Angrtom. Defaults to 20.
+    #         resolution (float): 
+    #                 resolution of the grid in Angstrom. Defaults to 1.
+    #     """
+
+    #     grid = self.grid_generator_2d(x_range,y_range,resolution)
+    #     print(grid)
+    #     # generate 2d grid
+    #     # screen 2d plot
+    #     pass
 
 
     def check_if_current_flow_conserved(self) -> bool:
